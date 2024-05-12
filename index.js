@@ -74,7 +74,7 @@ async function run() {
        .send({success: true})
    })
       
-    // CRUD Operation
+    // CRUD Operation 
     app.post('/food',async(req,res)=>{
         const foodData=req.body;
         const result = await foodsCollection.insertOne(foodData)
@@ -104,6 +104,29 @@ async function run() {
         const result = await foodsCollection.findOne(query)
         res.send(result)
     })
+
+    app.delete('/food/:id',async(req,res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)}
+      const result = await foodsCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    app.put('/update-food/:id',async(req,res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)}
+      const FoodData=req.body
+      const options={upsert:true}
+      const updateDoc = {
+        $set:{
+          ...FoodData,
+        },
+      }
+      const result = await foodsCollection.updateOne(query,updateDoc,options)
+      res.send(result)
+    })
+
+
 
 
 
