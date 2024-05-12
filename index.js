@@ -74,7 +74,7 @@ async function run() {
        .send({success: true})
    })
       
-
+    // CRUD Operation
     app.post('/food',async(req,res)=>{
         const foodData=req.body;
         const result = await foodsCollection.insertOne(foodData)
@@ -86,6 +86,17 @@ async function run() {
         const result = await cursor.toArray();
         res.send(result)
     })
+
+    app.get('/foods/:email',async(req,res)=>{
+      // const tokenEmail=req.user.email
+      const email=req.params.email;
+      // if(tokenEmail !== email){
+      //   return res.status(403).send({message:'forbidden access'})
+      // }
+      const query={'donar.email':email}
+      const result = await foodsCollection.find(query).toArray()
+      res.send(result)
+  })
 
     app.get('/food/:id',async(req,res)=>{
         const id=req.params.id;
