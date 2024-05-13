@@ -23,7 +23,7 @@ const verifyToken=(req,res,next)=>{
       return res.status(401).send({message:'unauthorized access'})
     }
     if(token){
-      jwt.verify(token.process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+      jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
         if(err){
           return res.status(403).send({message:'forbidden access'})
         }
@@ -32,6 +32,7 @@ const verifyToken=(req,res,next)=>{
       })
     }
 }
+
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.cxuuz57.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -49,6 +50,7 @@ async function run() {
   try { 
 
     const foodsCollection=client.db('YumHub').collection('foods')
+    const RequestCollection=client.db('YumHub').collection('RequestFoods')
 
         // jwt generate
     app.post('/jwt',async(req,res)=>{
@@ -74,7 +76,7 @@ async function run() {
        .send({success: true})
    })
       
-    // CRUD Operation 
+    // CRUD Operation of FoodCollection
     app.post('/food',async(req,res)=>{
         const foodData=req.body;
         const result = await foodsCollection.insertOne(foodData)
@@ -87,12 +89,12 @@ async function run() {
         res.send(result)
     })
 
-    app.get('/foods/:email',async(req,res)=>{
-      // const tokenEmail=req.user.email
+    app.get('/foods/:email',verifyToken,async(req,res)=>{
+      const tokenEmail=req.user.email
       const email=req.params.email;
-      // if(tokenEmail !== email){
-      //   return res.status(403).send({message:'forbidden access'})
-      // }
+      if(tokenEmail !== email){
+         return res.status(403).send({message:'forbidden access'})
+      }
       const query={'donar.email':email}
       const result = await foodsCollection.find(query).toArray()
       res.send(result)
@@ -126,6 +128,30 @@ async function run() {
       res.send(result)
     })
 
+    app.patch('/food/:id',async(req,res)=>{
+      const id=req.params.id;
+      const status=req.body;
+      const query={_id:new ObjectId(id)}
+      const updateDoc={
+        $set: status
+      }
+      const result = await foodsCollection.updateOne(query,updateDoc)
+      res.send(result)
+    })
+
+    // CRUD Operation of RequestedCollection
+    app.post('/Req-Food',async(req,res)=>{
+      const RequestData=req.body;
+      const result = await RequestCollection.insertOne(RequestData)
+      res.send(result)
+  })
+
+  app.get('/my-requests/:email',verifyToken,async(req,res)=>{
+    const email=req.params.email;
+    const query={email}
+    const result = await RequestCollection.find(query).toArray()
+    res.send(result)
+  })
 
 
 
