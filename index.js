@@ -84,9 +84,10 @@ async function run() {
     })
 
     app.get('/foods',async(req,res)=>{
-        const cursor=foodsCollection.find({});
+        const cursor=foodsCollection.find({ status: "available" }).sort({quantity:-1});
         const result = await cursor.toArray();
         res.send(result)
+        
     })
 
     app.get('/foods/:email',verifyToken,async(req,res)=>{
@@ -139,19 +140,40 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/all-foods',async(req,res)=>{
+      const sort=req.query.sort;
+      const search=req.query.search;
+  
+      let query={
+        food_name:{ $regex:search, $options: 'i'}
+      }
+
+      let options={}
+      if(sort){
+        options={sort:{expired_date:sort==='asc' ? 1 : -1}}
+      }
+      
+      const cursor=foodsCollection.find({...query,status: "available" },options);
+      const result = await cursor.toArray();
+      res.send(result)
+    })
+  
+
     // CRUD Operation of RequestedCollection
     app.post('/Req-Food',async(req,res)=>{
       const RequestData=req.body;
       const result = await RequestCollection.insertOne(RequestData)
       res.send(result)
-  })
+    })
 
-  app.get('/my-requests/:email',verifyToken,async(req,res)=>{
-    const email=req.params.email;
-    const query={email}
-    const result = await RequestCollection.find(query).toArray()
-    res.send(result)
-  })
+   app.get('/my-requests/:email',verifyToken,async(req,res)=>{
+      const email=req.params.email;
+      const query={email}
+      const result = await RequestCollection.find(query).toArray()
+      res.send(result)
+    })
+
+  
 
 
 
