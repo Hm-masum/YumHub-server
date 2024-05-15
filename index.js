@@ -8,7 +8,9 @@ const port = process.env.PORT || 5000;
 const app = express()
 
 const corsOptions={
-    origin:['http://localhost:5173'],
+    origin:['http://localhost:5173',
+    'https://yumhub-c06d7.web.app',
+    'https://yumhub-c06d7.firebaseapp.com'],
     credentials:true,
     optionSuccessStatus:200,
 }
@@ -65,11 +67,11 @@ async function run() {
         }).send({success: true})
     })
       
-    app.get('/logout',(req,res)=>{
+    app.post('/logout',(req,res)=>{
       res.
       clearCookie('token',{
          httpOnly:true,
-         secure: process.env.NODE_ENV==='production',
+         secure: true,
          sameSite: process.env.NODE_ENV==='production' ? 'none' : 'strict',
          maxAge:0,
       })
@@ -173,15 +175,8 @@ async function run() {
       res.send(result)
     })
 
-  
 
-
-
-
-
-
-
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
